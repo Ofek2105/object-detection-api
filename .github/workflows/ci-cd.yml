@@ -50,3 +50,15 @@ jobs:
         context: .
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/object-detection-api:latest
+
+    - name: Deploy to Proxmox VM
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.DEPLOY_HOST }}
+        username: ${{ secrets.DEPLOY_USER }}
+        key: ${{ secrets.DEPLOY_KEY }}
+        script: |
+          docker stop object-api || true
+          docker rm object-api || true
+          docker pull ${{ secrets.DOCKER_USERNAME }}/object-detection-api:latest
+          docker run -d --name object-api -p 8000:8000 ${{ secrets.DOCKER_USERNAME }}/object-detection-api:latest
